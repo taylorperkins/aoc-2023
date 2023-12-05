@@ -55,6 +55,7 @@ def main(aoc: str):
             destination, source, step = [
                 int(v) for v in line.split(" ")
             ]
+            # Note: reverse!
             category_maps.append(CategoryMap(
                 source=destination,
                 destination=source,
@@ -62,7 +63,7 @@ def main(aoc: str):
             ))
         maps.append(Map(category_maps=category_maps))
 
-    # reverse the process
+    # reverse the almanac, going from location to seed
     maps = maps[::-1]
     seed_ranges = get_seed_ranges(components[0][7:])
 
@@ -74,7 +75,7 @@ def main(aoc: str):
     while not target_seed:
         i += step
         iterations += 1
-        # Going backwards from location
+
         seed = reduce(lambda v, m: m[v], maps, i)
 
         for r in seed_ranges:
