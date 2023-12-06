@@ -1,11 +1,11 @@
 import re
 from functools import reduce
-from math import floor
 
 from utils import getInput, timeit
 
 
 digits_ptrn = re.compile(r'\d+')
+
 
 def calc_distance(max_time: int, speed: int):
     return (max_time-speed)*speed
