@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections import deque
-from functools import reduce
 from typing import Tuple, Dict, Set, List, Callable, Generator
 
 from utils import getInput, timeit
