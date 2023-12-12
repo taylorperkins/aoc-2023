@@ -20,7 +20,7 @@ def main(aoc: str):
 
     galaxies: List[Coord] = []
 
-    # defaults to false -
+    # can be evaluated as int later on
     x_empty = [True] * len(lines)
     y_empty = [True] * len(lines[0])
 
