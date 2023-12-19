@@ -55,13 +55,14 @@ def main(aoc: str):
             grid.append(current)
 
     poly = Polygon(grid)
-    interior_size = 0
-    for x, ys in range_map.items():
-        for y in range(int(min(ys)), int(max(ys))+1):
-            if poly.contains(Point(x, y)):
-                interior_size += 1
+    print((poly.area) + len(grid)-1)
+    # interior_size = 0
+    # for x, ys in range_map.items():
+    #     for y in range(int(min(ys)), int(max(ys))+1):
+    #         if poly.contains(Point(x, y)):
+    #             interior_size += 1
 
-    print(len(grid)-1+interior_size)
+    # print(len(grid)-1+interior_size)
 
 
 if __name__ == "__main__":
