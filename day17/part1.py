@@ -58,8 +58,7 @@ class Node:
 
     @property
     def symbol(self):
-        _map = {left: "<", right: ">", down: "v", up: "^"}
-        return _map[self.direction]
+        return TRAVERSAL_SYMBOLS[self.direction]
 
     @property
     def opportunity_cost(self):
@@ -128,9 +127,11 @@ def main(aoc: str):
     ]
 
     out = min_path(_map)
+    print(out.history)
     print(out.value)
 
 
 if __name__ == "__main__":
     main(getInput("./input-test.txt"))
+    # 683 - too high
     main(getInput("./input.txt"))
