@@ -149,4 +149,4 @@ def main(aoc: str):
 if __name__ == "__main__":
     main(getInput("./input-test.txt"))
     # 681, 682, 683 - too high
-    main(getInput("./input.txt"))
+    # main(getInput("./input.txt"))
