@@ -67,7 +67,8 @@ def main(aoc: str):
     current_plots = {start}
     out = []
     elevens = defaultdict(list)
-    for i in range(11*10):
+    for i in range(11*20):
+
         next_plots = set()
         for c in current_plots:
             for d in plot_neighbors[translate_coord(c, shape)]:
