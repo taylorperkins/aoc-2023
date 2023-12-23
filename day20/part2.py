@@ -3,8 +3,10 @@ from __future__ import annotations
 import abc
 import collections
 import enum
+from functools import reduce
+from math import gcd
 import queue
-from typing import Dict, List, Optional, Set, Generator, Callable, Tuple
+from typing import Dict, List, Optional, Set, Callable
 
 from utils import getInput, timeit
 
@@ -110,7 +112,7 @@ class Conjunction(Module):
 
 class CommunicationRelay:
     def __init__(self):
-        self._modules: Dict[str, Module] = {}
+        self.modules: Dict[str, Module] = {}
         self._input_modules: Dict[str, Set[str]] = collections.defaultdict(set)
         self._destination_modules: Dict[str, List[str]] = collections.defaultdict(list)
 
@@ -131,17 +133,17 @@ class CommunicationRelay:
 
         m = module(label=label, input_modules=self.input_modules, destination_modules=self.destination_modules)
         m.pulse_event.append(self.receive)
-        self._modules[label] = m
+        self.modules[label] = m
         self._destination_modules[label] = targets
         for t in targets:
             self._input_modules[t].add(label)
 
     def input_modules(self, label: str):
-        return [self._modules[i] for i in self._input_modules[label]]
+        return [self.modules[i] for i in self._input_modules[label]]
 
     def destination_modules(self, label: str):
         dms = self._destination_modules[label]
-        return [self._modules[d] for d in dms]
+        return [self.modules[d] for d in dms]
 
     @property
     def score(self):
@@ -150,7 +152,7 @@ class CommunicationRelay:
     def receive(self, label: str, pulse: Pulse):
         """Receives a pulse between two modules"""
         try:
-            m = self._modules[label]
+            m = self.modules[label]
         except KeyError:
             raise KeyError(f"{label} not available! Exiting.")
         else:
@@ -159,18 +161,24 @@ class CommunicationRelay:
                 self._pulse_counter[pulse] += 1
                 self._queue.put((m.label, pulse, dest.label,))
 
-    def process_next(self, raise_condition: Callable[[str, Pulse, str], bool] = lambda s, p, d: False):
+    def process_next(self):
         source, pulse, dest = self._queue.get()
-        if dest in self._modules:
-            if raise_condition(source, pulse, dest):
-                raise RuntimeError("Raise condition met!")
-            self._modules[dest].receive(source, pulse)
+        if dest in self.modules:
+            self.modules[dest].receive(source, pulse)
 
-    def button(self, raise_condition: Callable[[str, Pulse, str], bool] = lambda s, p, d: False):
+    def button(self):
         # print()
         self._queue.put(("press", Pulse.LOW, "button"))
         while not self._queue.empty():
-            self.process_next(raise_condition)
+            self.process_next()
+
+
+def lcm(*numbers):
+    return reduce(
+        lambda acc, v: acc * v // gcd(acc, v),
+        numbers,
+        1
+    )
 
 
 @timeit
@@ -183,18 +191,27 @@ def main(aoc: str):
         source_raw, destination_modules = line.split(" -> ")
         communication_relay.register_module(source_raw, destination_modules.split(", "))
 
-    for label in set(communication_relay._input_modules.keys()) - set(communication_relay._modules.keys()):
+    for label in set(communication_relay._input_modules.keys()) - set(communication_relay.modules.keys()):
         communication_relay.register_module(label, targets=[])
 
     i = 1
-    while True:
-        try:
-            communication_relay.button(raise_condition=lambda s, p, d: d == "rx" and p == Pulse.LOW)
-        except RuntimeError:
-            print(i)
-            return
-        else:
-            i += 1
+    watcher_map = collections.defaultdict(list)
+
+    def watcher(l: str, p: Pulse):
+        if p == Pulse.HIGH:
+            watcher_map[l].append(i)
+            print(f"{i} -> {l}")
+
+    # watch these to try and find a LCM from the logs
+    for l in ("nx", "sp", "cc", "jq",):
+        communication_relay.modules[l].pulse_event.append(watcher)
+
+    while len(watcher_map.keys()) < 4:
+        communication_relay.button()
+        i += 1
+
+    print(watcher_map)
+    print(lcm(*[v[0] for v in watcher_map.values()]))
 
 
 if __name__ == "__main__":
