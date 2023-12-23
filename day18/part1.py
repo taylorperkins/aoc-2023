@@ -51,7 +51,7 @@ def main(aoc: str):
         current = grid[-1]
         for _ in range(amount):
             current = direction(current)
-            range_map[current.x].add(current.y)
+            range_map[current.xr].add(current.yr)
             grid.append(current)
 
     poly = Polygon(grid)

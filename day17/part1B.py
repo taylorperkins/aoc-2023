@@ -78,7 +78,7 @@ class Node:
     def __eq__(self, other):
         if isinstance(other, tuple):
             return other == self.coord
-        return self.id == other.id
+        return self.id == other.hash
 
     def __hash__(self):
         return hash(self.id)

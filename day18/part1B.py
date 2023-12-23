@@ -112,14 +112,14 @@ def main(aoc: str):
         next_point = direction(current_point, amount)
         line.append(next_point)
         if direction_symbol in ["U", "D"]:
-            xs = sorted([current_point.x, next_point.x])
+            xs = sorted([current_point.x, next_point.xr])
             vertical_ranges[int(current_point.y)].append(Range(
                 i=int(current_point.y),
                 label="V",
                 range=range(int(xs[0]), int(xs[1]))
             ))
         else:
-            ys = sorted([current_point.y, next_point.y])
+            ys = sorted([current_point.y, next_point.yr])
             horizontal_ranges[int(current_point.x)].append(Range(
                 i=int(current_point.x),
                 label="H",
