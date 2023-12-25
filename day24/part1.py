@@ -13,6 +13,13 @@ Coord = Tuple[float, float]
 Line = Tuple[Coord, Coord]
 
 
+def euclidean(l: Coord, r: Coord):
+    return math.sqrt(sum([
+        (l[0] - r[0]) ** 2,
+        (l[1] - r[1]) ** 2
+    ]))
+
+
 @dataclass
 class Hailstone:
     px: int
@@ -26,6 +33,10 @@ class Hailstone:
         return f"Hailstone({self.px}, {self.py}, {self.pz} @ {self.vx}, {self.vy}, {self.vz})"
 
     @property
+    def xy_slope(self):
+        return self.vy / self.vx
+
+    @property
     def xy(self):
         return self.px, self.py
 
@@ -36,12 +47,6 @@ class Hailstone:
             py=self.py + (self.vy * nanoseconds),
             pz=self.pz + (self.vz * nanoseconds),
         )
-
-    def xy_distance(self, other: Hailstone):
-        return math.sqrt(sum([
-            (self.px - other.px) ** 2,
-            (self.py - other.py) ** 2
-        ]))
 
     def angle(self, base: Line) -> float:
         assert self.xy in base
@@ -69,38 +74,27 @@ class Hailstone:
         return angle_deg
 
     def intersecting_point(self, other: Hailstone) -> Optional[Coord]:
-        base: Line = (self.xy, other.xy)
-        la, ra = self.angle(base), other.angle(base)
-        print(f"{self}: {la}")
-        print(f"{other}: {ra}")
-
-        if la + ra == 180:
-            print("Parallel")
+        if self.xy_slope == other.xy_slope:
+            # print("Parallel")
             return None
 
-        if la + ra > 180:
-            print("Crossed in the past")
+        # all based on slope-point form, finding point of intersection
+        # between two lines
+        x = ((self.px*self.xy_slope) - (other.px*other.xy_slope) + other.py - self.py) / (self.xy_slope - other.xy_slope)
+        # just need to solve for one side, should be the same
+        y = self.xy_slope*(x-self.px) + self.py
+
+        # moving closer
+        if euclidean(self.move(1).xy, (x, y)) < euclidean(self.xy, (x, y)):
+            # print(f"Will cross at {x, y}")
+            return x, y
+        else:
+            # print("Crossed in the past")
             return None
-
-        base_length = self.xy_distance(other)
-        vertex_angle = 180 - la - ra
-        print(vertex_angle)
-
-        # figure out the distance from self to the vertex
-        # - law of sines
-        distance = (base_length*math.sin(ra))/math.sin(vertex_angle)
-        slope = self.vy/self.vx
-
-        # Calculate change in x and change in y
-        delta_x = distance / math.sqrt(1 + slope ** 2)
-        delta_y = slope * delta_x
-
-        print(f"Will cross at {self.px+delta_x, self.py+delta_y}")
-        return self.px+delta_x, self.py+delta_y
 
 
 @timeit
-def main(aoc: str):
+def main(aoc: str, test_area: Coord):
     hailstones: List[Hailstone] = []
 
     for line in aoc.splitlines():
@@ -110,15 +104,23 @@ def main(aoc: str):
 
         hailstones.append(Hailstone(*pos, *vel))
 
+    i = 0
     for l, r in itertools.combinations(hailstones, 2):
         l: Hailstone
         r: Hailstone
 
-        print()
         intersecting_point = l.intersecting_point(r)
+        if (
+            intersecting_point is not None
+            and test_area[0] <= intersecting_point[0] <= test_area[1]
+            and test_area[0] <= intersecting_point[1] <= test_area[1]
+        ):
+            i += 1
+
+    print(i)
 
 
 if __name__ == "__main__":
-    main(getInput("./input-test.txt"))
-
-    # main(getInput("./input.txt"))
+    main(getInput("./input-test.txt"), (7, 27))
+    # 16244 - too high
+    main(getInput("./input.txt"), (200000000000000, 400000000000000))
