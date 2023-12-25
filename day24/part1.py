@@ -48,31 +48,6 @@ class Hailstone:
             pz=self.pz + (self.vz * nanoseconds),
         )
 
-    def angle(self, base: Line) -> float:
-        assert self.xy in base
-        # we want the connecting coord to be in the middle (c2)
-        c1, c2 = base if base[1] == self.xy else base[::-1]
-        c3 = self.move(1).xy
-
-        u = (c1[0] - c2[0], c1[1] - c2[1])
-        v = (c3[0] - c2[0], c3[1] - c2[1])
-
-        # Calculate dot product and vector magnitudes
-        dot_product = u[0] * v[0] + u[1] * v[1]
-        magnitude_u = math.sqrt(u[0] ** 2 + u[1] ** 2)
-        magnitude_v = math.sqrt(v[0] ** 2 + v[1] ** 2)
-
-        # Calculate cosine of the angle
-        cos_theta = dot_product / (magnitude_u * magnitude_v)
-
-        # Calculate angle in radians
-        angle_rad = math.acos(cos_theta)
-
-        # Convert angle to degrees
-        angle_deg = math.degrees(angle_rad)
-
-        return angle_deg
-
     def intersecting_point(self, other: Hailstone) -> Optional[Coord]:
         if self.xy_slope == other.xy_slope:
             # print("Parallel")
@@ -85,7 +60,10 @@ class Hailstone:
         y = self.xy_slope*(x-self.px) + self.py
 
         # moving closer
-        if euclidean(self.move(1).xy, (x, y)) < euclidean(self.xy, (x, y)):
+        if (
+            euclidean(self.move(1).xy, (x, y)) <= euclidean(self.xy, (x, y))
+            and euclidean(other.move(1).xy, (x, y)) <= euclidean(other.xy, (x, y))
+        ):
             # print(f"Will cross at {x, y}")
             return x, y
         else:
